@@ -139,6 +139,33 @@
   .nav-links { display: none; align-items: center; gap: 22px; }
   .nav-links button { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.78); transition: color 0.2s; text-shadow: 0 1px 3px rgba(0,0,0,0.25); }
   .nav-links button:hover, .nav-links button.active { color: #fff; }
+  .nav-hamburger {
+    display: flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border-radius: 8px;
+    color: rgba(255,255,255,0.85); transition: background 0.2s;
+  }
+  .nav-hamburger:hover { background: rgba(255,255,255,0.1); }
+  .nav-mobile-menu {
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.95); z-index: 1000;
+    flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+  }
+  .nav-mobile-menu.open { display: flex; }
+  .nav-mobile-menu button {
+    font-size: 20px; font-weight: 500; color: rgba(255,255,255,0.9);
+    padding: 12px 24px; border-radius: 8px; transition: background 0.2s;
+  }
+  .nav-mobile-menu button:hover { background: rgba(255,255,255,0.1); }
+  .nav-mobile-close {
+    position: absolute; top: 20px; right: 20px;
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.85); transition: background 0.2s;
+  }
+  .nav-mobile-close:hover { background: rgba(255,255,255,0.1); }
+  @media (min-width: 768px) {
+    .nav-hamburger { display: none; }
+  }
   .nav-contact {
     font-size: 13px; font-weight: 600;
     padding: 10px 20px; border-radius: 999px; background: rgba(255,255,255,0.92); color: var(--text-main); display: none;
@@ -590,6 +617,13 @@
           <span id="navCrest"></span>
           <span>Gentlemen's Club Cham</span>
         </div>
+        <button class="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menü">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
         <div class="nav-links">
           <button onclick="scrollToId('ueber')">Der Club</button>
           <button onclick="scrollToId('events')">Events</button>
@@ -606,6 +640,23 @@
         </div>
       </div>
     </nav>
+  </div>
+
+  <!-- MOBILE MENU -->
+  <div class="nav-mobile-menu" id="mobileMenu">
+    <button class="nav-mobile-close" onclick="toggleMobileMenu()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <button onclick="scrollToId('ueber'); toggleMobileMenu()">Der Club</button>
+    <button onclick="scrollToId('events'); toggleMobileMenu()">Events</button>
+    <button onclick="scrollToId('halloffame'); toggleMobileMenu()">Hall of Fame</button>
+    <button onclick="scrollToId('galerie'); toggleMobileMenu()">Galerie</button>
+    <button onclick="scrollToId('finanzen'); toggleMobileMenu()">Finanzen</button>
+    <button onclick="scrollToId('statuten'); toggleMobileMenu()">Statuten</button>
+    <button onclick="scrollToId('kontakt'); toggleMobileMenu()">Kontakt</button>
   </div>
 
   <!-- HERO -->
@@ -1301,6 +1352,12 @@
     if (id === 'top') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function toggleMobileMenu() {
+    const menu = document.getElementById('mobileMenu');
+    menu.classList.toggle('open');
+    document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
   }
 
   // ---- Scroll reveal ----

@@ -136,6 +136,62 @@
 
   .divider { width: 64px; height: 1px; margin: 32px auto; background: var(--border); }
 
+  /* ===== SCROLL PROGRESS ===== */
+  .scroll-progress {
+    position: fixed; top: 0; left: 0; width: 0%; height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-deep));
+    z-index: 1000; transition: width 0.1s linear;
+  }
+
+  /* ===== TOAST NOTIFICATIONS ===== */
+  .toast-container {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    z-index: 10000; display: flex; flex-direction: column; gap: 8px;
+    pointer-events: none;
+  }
+  .toast {
+    padding: 14px 24px; border-radius: 12px;
+    background: var(--text-main); color: #fff;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(20px); opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    pointer-events: auto;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #2d7d46; }
+  .toast.error { background: var(--error); }
+  .toast.info { background: #2563eb; }
+
+  /* ===== SKELETON LOADING ===== */
+  .skeleton {
+    background: linear-gradient(90deg, var(--bg-card) 25%, var(--border-soft) 50%, var(--bg-card) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .skeleton-text { height: 16px; margin-bottom: 8px; }
+  .skeleton-text:last-child { width: 60%; }
+  .skeleton-avatar { width: 48px; height: 48px; border-radius: 50%; }
+  .skeleton-card { padding: 32px; }
+
+  /* ===== FORM VALIDATION ===== */
+  .field-error {
+    font-size: 12px; color: var(--error); margin-top: 4px;
+    display: none; align-items: center; gap: 4px;
+  }
+  .field-error.visible { display: flex; }
+  .field-error svg { width: 14px; height: 14px; }
+  input.invalid, select.invalid, textarea.invalid {
+    border-color: var(--error) !important;
+    box-shadow: 0 0 0 3px rgba(176, 70, 60, 0.1);
+  }
+
   /* ===== NAVBAR (schwebende Pill) ===== */
   .nav-wrap {
     position: fixed; top: 18px; left: 0; width: 100%; z-index: 40;
@@ -615,6 +671,12 @@
 </head>
 <body>
 
+<!-- SCROLL PROGRESS -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
 <!-- ============ LOGIN SCREEN ============ -->
 <div class="login-screen" id="loginScreen">
   <div class="login-box" id="loginBox">
@@ -994,20 +1056,23 @@
           <div class="finance-field-row">
             <div class="finance-field">
               <label class="login-label">Datum</label>
-              <input type="date" id="finDate" class="finance-input" />
+              <input type="date" id="finDate" class="finance-input" required />
+              <div class="field-error"></div>
             </div>
             <div class="finance-field">
               <label class="login-label">Art</label>
-              <select id="finType" class="finance-input">
+              <select id="finType" class="finance-input" required>
                 <option value="">Bitte wählen</option>
                 <option value="einnahme">Einnahme</option>
                 <option value="ausgabe">Ausgabe</option>
               </select>
+              <div class="field-error"></div>
             </div>
           </div>
           <div class="finance-field">
             <label class="login-label">Titel</label>
-            <input type="text" id="finTitle" class="finance-input" placeholder="z.B. Bierrechnung Saisoneröffnung" />
+            <input type="text" id="finTitle" class="finance-input" placeholder="z.B. Bierrechnung Saisoneröffnung" required />
+            <div class="field-error"></div>
           </div>
           <div class="finance-field">
             <label class="login-label">Kurzbeschrieb <span style="text-transform:none;font-weight:400;opacity:0.7;">(optional)</span></label>
@@ -1018,8 +1083,9 @@
               <label class="login-label">Betrag</label>
               <div class="finance-amount-wrap">
                 <span class="finance-currency">CHF</span>
-                <input type="number" id="finAmount" class="finance-input finance-amount-input" placeholder="0.00" min="0" step="0.05" inputmode="decimal" />
+                <input type="number" id="finAmount" class="finance-input finance-amount-input" placeholder="0.00" min="0" step="0.05" inputmode="decimal" required />
               </div>
+              <div class="field-error"></div>
             </div>
             <div class="finance-field">
               <label class="login-label">Beleg</label>
@@ -1040,7 +1106,11 @@
       <div class="reveal" style="margin-top:48px;">
         <h3 style="font-size:18px;margin-bottom:18px;">Alle Einträge</h3>
         <div id="financeList">
-          <p class="album-empty-msg">Lädt…</p>
+          <div class="skeleton-card">
+            <div class="skeleton skeleton-text" style="width: 100%;"></div>
+            <div class="skeleton skeleton-text" style="width: 80%;"></div>
+            <div class="skeleton skeleton-text" style="width: 60%;"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1273,6 +1343,8 @@
     initParallax();
     initPageTransitions();
     initCustomCursor();
+    initScrollProgress();
+    initFormValidation();
   }
 
   async function attemptLogin() {
@@ -1428,6 +1500,92 @@
         }
       });
     });
+  }
+
+  // ---- Scroll Progress ----
+  function initScrollProgress() {
+    const progressBar = document.getElementById('scrollProgress');
+    if (!progressBar) return;
+
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.pageYOffset;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      progressBar.style.width = scrollPercent + '%';
+    }, { passive: true });
+  }
+
+  // ---- Toast Notifications ----
+  function showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        ${type === 'success' ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>' :
+        type === 'error' ? '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>' :
+        '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>'}
+      </svg>
+      <span>${message}</span>
+    `;
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      toast.classList.add('show');
+    });
+
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+
+  // ---- Form Validation ----
+  function initFormValidation() {
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+      const inputs = form.querySelectorAll('input, select, textarea');
+      inputs.forEach(input => {
+        input.addEventListener('blur', () => validateField(input));
+        input.addEventListener('input', () => {
+          if (input.classList.contains('invalid')) {
+            validateField(input);
+          }
+        });
+      });
+    });
+  }
+
+  function validateField(field) {
+    const errorEl = field.parentElement.querySelector('.field-error');
+    let isValid = true;
+    let errorMessage = '';
+
+    if (field.required && !field.value.trim()) {
+      isValid = false;
+      errorMessage = 'Dieses Feld ist erforderlich';
+    } else if (field.type === 'email' && field.value && !field.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      isValid = false;
+      errorMessage = 'Bitte gültige E-Mail eingeben';
+    } else if (field.type === 'number' && field.value && isNaN(field.value)) {
+      isValid = false;
+      errorMessage = 'Bitte gültige Zahl eingeben';
+    }
+
+    if (!isValid) {
+      field.classList.add('invalid');
+      if (errorEl) {
+        errorEl.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>${errorMessage}`;
+        errorEl.classList.add('visible');
+      }
+    } else {
+      field.classList.remove('invalid');
+      if (errorEl) {
+        errorEl.classList.remove('visible');
+      }
+    }
+
+    return isValid;
   }
 
   // ---- Custom Cursor ----
@@ -1774,6 +1932,22 @@
   document.getElementById('financeForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     financeSuccess.classList.remove('visible');
+
+    // Validate all required fields
+    const form = e.target;
+    const requiredFields = form.querySelectorAll('[required]');
+    let allValid = true;
+    requiredFields.forEach(field => {
+      if (!validateField(field)) {
+        allValid = false;
+      }
+    });
+
+    if (!allValid) {
+      showToast('Bitte alle Pflichtfelder ausfüllen', 'error');
+      return;
+    }
+
     const data = validateFinanceForm();
     if (!data) return;
 
@@ -1785,12 +1959,15 @@
       // Formular zurücksetzen
       finDate.value = ''; finType.value = ''; finTitle.value = ''; finDesc.value = ''; finAmount.value = '';
       finFile.value = ''; finFileLabelText.textContent = 'Datei wählen (PDF, JPG, PNG)';
+      // Remove invalid states
+      form.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+      form.querySelectorAll('.field-error').forEach(el => el.classList.remove('visible'));
+
       await loadFinanceEntries();
-      financeSuccess.classList.add('visible');
-      setTimeout(() => financeSuccess.classList.remove('visible'), 3500);
+      showToast('Eintrag erfolgreich gespeichert', 'success');
     } catch (err) {
       console.error('Fehler beim Speichern:', err);
-      financeError.textContent = 'Fehler beim Speichern: ' + err.message;
+      showToast('Fehler beim Speichern: ' + err.message, 'error');
     } finally {
       financeSubmitBtn.disabled = false;
       financeSubmitBtn.textContent = 'Eintrag speichern';

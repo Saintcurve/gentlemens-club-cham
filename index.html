@@ -83,11 +83,13 @@
   .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.18); background: #000; }
   .btn-primary:active { transform: translateY(0); }
   .btn-secondary {
-    padding: 15px 26px; font-size: 14px; font-weight: 600; color: var(--text-main);
-    border-radius: 999px; transition: background 0.25s ease;
+    padding: 15px 26px; font-size: 14px; font-weight: 600; color: #fff;
+    border-radius: 999px; transition: background 0.25s ease, transform 0.25s ease;
     display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.15); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.25);
   }
-  .btn-secondary:hover { background: rgba(0,0,0,0.05); }
+  .btn-secondary:hover { background: rgba(255,255,255,0.25); transform: translateY(-2px); }
   .btn-ghost-pill {
     padding: 13px 26px; font-size: 14px; font-weight: 600; color: var(--text-main);
     border: 1.5px solid var(--border); border-radius: 999px; background: #fff;
@@ -207,7 +209,7 @@
   }
   @keyframes fadeUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
   .hero-content h1 {
-    font-size: 56px; line-height: 0.95; margin-bottom: 28px; color: #fff;
+    font-size: 56px; line-height: 0.95; margin-bottom: 48px; color: #fff;
     letter-spacing: -0.01em; text-transform: uppercase; font-weight: 700;
     text-shadow: 0 4px 24px rgba(0,0,0,0.35);
   }

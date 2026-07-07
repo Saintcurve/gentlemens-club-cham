@@ -513,6 +513,10 @@
     width: 64px; flex-shrink: 0; padding: 10px 0;
     border-radius: 14px; background: #fff; border: 1px solid var(--border);
   }
+  [data-theme="dark"] .event-date-block {
+    background: var(--bg-section);
+    border-color: var(--border);
+  }
   .event-date-block .month {
     font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold-deep); font-weight: 700;
     margin-bottom: 2px;
@@ -545,6 +549,14 @@
     transition: transform 0.25s ease, background 0.25s ease;
   }
   .cal-btn:hover { background: var(--gold-deep); transform: translateY(-1px); }
+  [data-theme="dark"] .cal-btn {
+    background: var(--gold);
+    color: #1A1A18;
+  }
+  [data-theme="dark"] .cal-btn:hover {
+    background: var(--gold-deep);
+    color: #fff;
+  }
   .cal-btn-label { display: inline; }
 
   /* ===== HALL OF FAME ===== */
@@ -666,6 +678,12 @@
   .balance-box.total { background: var(--text-main); border-color: var(--text-main); }
   .balance-box.total .balance-label { color: rgba(255,255,255,0.6); }
   .balance-box.total .balance-value { color: #fff; }
+  [data-theme="dark"] .balance-box.total {
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+  [data-theme="dark"] .balance-box.total .balance-label { color: rgba(26,26,24,0.7); }
+  [data-theme="dark"] .balance-box.total .balance-value { color: #1A1A18; }
 
   /* Erfassungsformular */
   .finance-field { margin-bottom: 16px; }
@@ -677,9 +695,18 @@
     border-radius: 12px; font-family: 'Inter', sans-serif;
   }
   .finance-input.field-error { border-color: var(--error); }
+  [data-theme="dark"] .finance-input {
+    background: var(--bg-card);
+    border-color: var(--border);
+    color: var(--text-main);
+  }
   textarea.finance-input { resize: vertical; }
   .finance-amount-wrap { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #fff; }
   .finance-amount-wrap:has(.field-error) { border-color: var(--error); }
+  [data-theme="dark"] .finance-amount-wrap {
+    background: var(--bg-card);
+    border-color: var(--border);
+  }
   .finance-currency { padding: 0 0 0 14px; font-size: 13px; font-weight: 600; color: var(--text-faint); }
   .finance-amount-input { border: none; border-radius: 0; }
   .finance-file-btn {
@@ -691,6 +718,11 @@
   .finance-file-btn.field-error { border-color: var(--error); }
   .finance-file-btn:hover { border-color: var(--gold); }
   .finance-file-btn svg { color: var(--gold-deep); flex-shrink: 0; }
+  [data-theme="dark"] .finance-file-btn {
+    background: var(--bg-card);
+    border-color: var(--border);
+    color: var(--text-muted);
+  }
   .finance-error {
     font-size: 12px; color: var(--error); margin: 6px 0 0; min-height: 16px;
   }

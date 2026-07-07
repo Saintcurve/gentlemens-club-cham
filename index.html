@@ -131,6 +131,7 @@
     background: var(--text-main); color: #FFFFFF; border-radius: 999px;
     display: inline-flex; align-items: center; gap: 8px;
     transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    will-change: transform;
   }
   .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.18); background: #000; }
   .btn-primary:active { transform: translateY(0); }
@@ -171,6 +172,16 @@
   .back-to-top:hover { background: var(--gold-deep); }
 
   .divider { width: 64px; height: 1px; margin: 32px auto; background: var(--border); }
+
+  /* ===== MAGNETIC BUTTONS ===== */
+  .magnetic {
+    position: relative;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s ease, background 0.3s ease;
+  }
+  .magnetic .magnetic-content {
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    pointer-events: none;
+  }
 
   /* ===== SCROLL PROGRESS ===== */
   .scroll-progress {
@@ -996,11 +1007,13 @@
         <div class="hero-eyebrow-italic">Tradition &amp; Gemeinschaft</div>
         <h1>Gentlemen's<br />Club Cham</h1>
         <div class="hero-buttons">
-          <button class="btn-primary" onclick="scrollToId('events')">
-            Nächste Events
-            <svg width="15" height="15" data-lucide="arrow-right"></svg>
+          <button class="btn-primary magnetic" onclick="scrollToId('events')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span class="magnetic-content">Events ansehen</span>
           </button>
-          <button class="btn-secondary" onclick="scrollToId('ueber')">Über den Club</button>
+          <button class="btn-secondary magnetic" onclick="scrollToId('ueber')">
+            <span class="magnetic-content">Über den Club</span>
+          </button>
         </div>
       </div>
       <div class="hero-info-card">
@@ -1803,6 +1816,42 @@
       downloadICS(ev);
     }
   }
+
+  // ---- Magnetic Buttons ----
+  function initMagneticButtons() {
+    const magneticElements = document.querySelectorAll('.magnetic');
+
+    magneticElements.forEach(el => {
+      const content = el.querySelector('.magnetic-content') || el;
+      const strength = 0.3; // Stärke des magnetischen Effekts
+      const boundingStrength = 0.15;
+
+      el.addEventListener('mousemove', (e) => {
+        const rect = el.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const deltaX = (e.clientX - centerX) * strength;
+        const deltaY = (e.clientY - centerY) * strength;
+
+        // Begrenze die Bewegung
+        const maxMove = 8;
+        const clampedX = Math.max(-maxMove, Math.min(maxMove, deltaX));
+        const clampedY = Math.max(-maxMove, Math.min(maxMove, deltaY));
+
+        el.style.transform = `translate(${clampedX}px, ${clampedY}px)`;
+        content.style.transform = `translate(${clampedX * boundingStrength}px, ${clampedY * boundingStrength}px)`;
+      });
+
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = 'translate(0, 0)';
+        content.style.transform = 'translate(0, 0)';
+      });
+    });
+  }
+
+  // Magnetic Buttons initialisieren
+  initMagneticButtons();
 
   // ---- Dark Mode Toggle ----
   (function initThemeToggle() {

@@ -709,6 +709,38 @@
   </div>
 </div>
 
+<!-- ============ PASSWORD RESET SCREEN ============ -->
+<div class="login-screen" id="passwordResetScreen" style="display:none;">
+  <div class="login-box" id="passwordResetBox">
+    <div class="login-header">
+      <div class="login-crest" id="resetCrest"></div>
+      <h1>Passwort festlegen</h1>
+      <p class="sub">Willkommen beim Gentlemen's Club Cham</p>
+    </div>
+    <div class="card">
+      <form id="passwordResetForm">
+        <label class="login-label">Neues Passwort</label>
+        <div class="login-input-wrap" style="margin-bottom:20px;">
+          <svg id="resetLockIcon1" width="16" height="16"></svg>
+          <input type="password" id="newPasswordInput" placeholder="Mindestens 6 Zeichen"
+                 autocapitalize="none" autocorrect="off" autocomplete="new-password" spellcheck="false" autofocus />
+        </div>
+        <label class="login-label">Passwort bestätigen</label>
+        <div class="login-input-wrap">
+          <svg id="resetLockIcon2" width="16" height="16"></svg>
+          <input type="password" id="confirmPasswordInput" placeholder="Passwort wiederholen"
+                 autocapitalize="none" autocorrect="off" autocomplete="new-password" spellcheck="false" />
+        </div>
+        <p class="login-error" id="passwordResetError">Passwörter stimmen nicht überein.</p>
+        <button type="submit" class="login-submit" id="passwordResetSubmitBtn">Passwort speichern</button>
+      </form>
+    </div>
+    <p class="login-footnote">
+      Nach dem Speichern können Sie sich mit Ihrem neuen Passwort anmelden.
+    </p>
+  </div>
+</div>
+
 <!-- ============ MAIN APP ============ -->
 <div id="app">
 
@@ -1305,6 +1337,8 @@
     });
     document.getElementById('lockIcon').setAttribute('data-lucide', 'lock');
     document.getElementById('mailIcon').setAttribute('data-lucide', 'mail');
+    document.getElementById('resetLockIcon1').setAttribute('data-lucide', 'lock');
+    document.getElementById('resetLockIcon2').setAttribute('data-lucide', 'lock');
     if (window.lucide) lucide.createIcons();
   }
   initIcons();
@@ -1383,6 +1417,120 @@
   }
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) logoutBtn.addEventListener('click', logout);
+
+  // ---- Beim Laden prüfen, ob Recovery-Token in URL vorhanden ist ----
+  (async function checkRecoveryToken() {
+    const hash = window.location.hash;
+    if (!hash) return;
+
+    const params = new URLSearchParams(hash.substring(1));
+    const accessToken = params.get('access_token');
+    const type = params.get('type');
+
+    if (accessToken && type === 'recovery') {
+      // Recovery-Flow: Passwort-Reset-Seite anzeigen
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('passwordResetScreen').style.display = 'flex';
+
+      // Token speichern für Passwort-Änderung
+      window.recoveryToken = accessToken;
+
+      // Crest einfügen
+      document.getElementById('resetCrest').innerHTML = logoImg(90);
+
+      // URL bereinigen (Hash entfernen)
+      history.replaceState(null, '', window.location.pathname);
+      return;
+    }
+  })();
+
+  // ---- Passwort-Reset-Logik ----
+  const passwordResetForm = document.getElementById('passwordResetForm');
+  const newPasswordInput = document.getElementById('newPasswordInput');
+  const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+  const passwordResetError = document.getElementById('passwordResetError');
+  const passwordResetBox = document.getElementById('passwordResetBox');
+  const passwordResetSubmitBtn = document.getElementById('passwordResetSubmitBtn');
+
+  function showResetError(message) {
+    passwordResetError.textContent = message;
+    newPasswordInput.classList.add('error');
+    confirmPasswordInput.classList.add('error');
+    passwordResetError.classList.add('visible');
+    passwordResetBox.classList.add('shake');
+    setTimeout(() => passwordResetBox.classList.remove('shake'), 400);
+  }
+
+  function clearResetError() {
+    newPasswordInput.classList.remove('error');
+    confirmPasswordInput.classList.remove('error');
+    passwordResetError.classList.remove('visible');
+  }
+
+  async function supabaseUpdatePassword(accessToken, newPassword) {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({ password: newPassword })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error_description || data.msg || "Passwort konnte nicht gespeichert werden.");
+    }
+    return data;
+  }
+
+  async function attemptPasswordReset() {
+    clearResetError();
+
+    const newPwd = newPasswordInput.value;
+    const confirmPwd = confirmPasswordInput.value;
+
+    if (newPwd.length < 6) {
+      showResetError('Passwort muss mindestens 6 Zeichen lang sein.');
+      return;
+    }
+
+    if (newPwd !== confirmPwd) {
+      showResetError('Passwörter stimmen nicht überein.');
+      return;
+    }
+
+    passwordResetSubmitBtn.disabled = true;
+    passwordResetSubmitBtn.textContent = 'Speichern…';
+
+    try {
+      await supabaseUpdatePassword(window.recoveryToken, newPwd);
+
+      // Erfolg: Login-Seite anzeigen mit Erfolgsmeldung
+      document.getElementById('passwordResetScreen').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+
+      // Erfolgsmeldung anzeigen
+      const loginError = document.getElementById('loginError');
+      loginError.textContent = 'Passwort erfolgreich gespeichert! Sie können sich jetzt anmelden.';
+      loginError.style.color = '#2d7d46';
+      loginError.classList.add('visible');
+
+      // Token löschen
+      window.recoveryToken = null;
+    } catch (err) {
+      console.error('Passwort-Reset-Fehler:', err);
+      showResetError('Passwort konnte nicht gespeichert werden: ' + err.message);
+    } finally {
+      passwordResetSubmitBtn.disabled = false;
+      passwordResetSubmitBtn.textContent = 'Passwort speichern';
+    }
+  }
+
+  passwordResetForm.addEventListener('submit', function (e) { e.preventDefault(); attemptPasswordReset(); });
+  passwordResetSubmitBtn.addEventListener('click', function (e) { e.preventDefault(); attemptPasswordReset(); });
+  newPasswordInput.addEventListener('input', clearResetError);
+  confirmPasswordInput.addEventListener('input', clearResetError);
 
   // ---- Beim Laden prüfen, ob bereits eine gültige Sitzung existiert ----
   (async function checkExistingSession() {

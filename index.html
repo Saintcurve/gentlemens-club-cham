@@ -29,7 +29,11 @@
     --error: #B0463C;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: smooth;
+  }
   body {
     font-family: 'Inter', sans-serif;
     background: var(--bg-page);
@@ -37,6 +41,7 @@
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    overscroll-behavior-y: smooth;
   }
   h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; letter-spacing: -0.01em; }
   img { display: block; max-width: 100%; }
@@ -94,7 +99,8 @@
 
   .reveal {
     opacity: 0; transform: translateY(24px);
-    transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+    transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
   }
   .reveal.visible { opacity: 1; transform: translateY(0); }
 
@@ -282,6 +288,8 @@
     background-size: cover;
     background-position: center;
     will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
   @keyframes heroZoom { 0% { transform: scale(1.08); } 100% { transform: scale(1); } }
   .hero-overlay {
@@ -342,7 +350,8 @@
     padding: 100px 24px;
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
   }
   section.visible {
     opacity: 1;
@@ -1624,15 +1633,23 @@
     document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
   }
 
-  // ---- Parallax Effect ----
+  // ---- Parallax Effect (optimiert mit requestAnimationFrame) ----
   function initParallax() {
     const heroBg = document.querySelector('.hero-bg');
     if (!heroBg) return;
 
-    window.addEventListener('scroll', () => {
+    let ticking = false;
+    function updateParallax() {
       const scrolled = window.pageYOffset;
       const rate = scrolled * 0.4;
       heroBg.style.transform = `translateY(${rate}px)`;
+      ticking = false;
+    }
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(updateParallax);
+        ticking = true;
+      }
     }, { passive: true });
   }
 
@@ -1649,16 +1666,24 @@
     });
   }
 
-  // ---- Scroll Progress ----
+  // ---- Scroll Progress (optimiert mit requestAnimationFrame) ----
   function initScrollProgress() {
     const progressBar = document.getElementById('scrollProgress');
     if (!progressBar) return;
 
-    window.addEventListener('scroll', () => {
+    let ticking = false;
+    function updateProgress() {
       const scrollTop = window.pageYOffset;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       const scrollPercent = (scrollTop / docHeight) * 100;
       progressBar.style.width = scrollPercent + '%';
+      ticking = false;
+    }
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(updateProgress);
+        ticking = true;
+      }
     }, { passive: true });
   }
 

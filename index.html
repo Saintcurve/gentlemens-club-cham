@@ -198,34 +198,34 @@
     box-shadow: 0 0 0 3px rgba(176, 70, 60, 0.1);
   }
 
-  /* ===== NAVBAR (schwebende Pill) ===== */
+  /* ===== NAVBAR (schwebende Pill — iOS Glass) ===== */
   .nav-wrap {
     position: fixed; top: 18px; left: 0; width: 100%; z-index: 40;
     display: flex; justify-content: center; padding: 0 16px;
   }
   nav {
     width: 100%; max-width: 920px;
-    background: rgba(255,255,255,0.12);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(30, 28, 24, 0.65);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.15);
     border-radius: 999px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.3);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
     transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
   }
   nav.scrolled {
-    background: rgba(20,18,14,0.55);
-    border-color: rgba(255,255,255,0.12);
-    box-shadow: 0 10px 32px rgba(0,0,0,0.25);
+    background: rgba(20,18,14,0.85);
+    border-color: rgba(255,255,255,0.1);
+    box-shadow: 0 10px 32px rgba(0,0,0,0.3);
   }
   .nav-inner {
     margin: 0 auto; padding: 10px 10px 10px 20px;
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
   }
   .nav-logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-  .nav-logo span { font-size: 14px; font-weight: 600; letter-spacing: 0.01em; font-family: 'Playfair Display', serif; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+  .nav-logo span { font-size: 14px; font-weight: 600; letter-spacing: 0.01em; font-family: 'Playfair Display', serif; color: rgba(255,255,255,0.95); text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
   .nav-links { display: none; align-items: center; gap: 22px; }
-  .nav-links button { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.78); transition: color 0.2s; text-shadow: 0 1px 3px rgba(0,0,0,0.25); }
+  .nav-links button { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.85); transition: color 0.2s; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
   .nav-links button:hover, .nav-links button.active { color: #fff; }
   .nav-hamburger {
     display: flex; align-items: center; justify-content: center;

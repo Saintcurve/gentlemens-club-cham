@@ -624,9 +624,23 @@
     background-size: cover; background-position: center;
     content-visibility: auto;
   }
+  /* Image Zoom on Hover */
+  .gallery-tile::before {
+    content: ''; position: absolute; inset: 0;
+    background: inherit; background-size: cover; background-position: center;
+    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+  }
+  .gallery-tile:hover::before {
+    transform: scale(1.08);
+  }
   .gallery-caption {
     position: absolute; inset: 0; display: flex; align-items: flex-end; padding: 16px;
     background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.6) 100%);
+    transition: background 0.3s ease;
+  }
+  .gallery-tile:hover .gallery-caption {
+    background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.7) 100%);
   }
   .gallery-caption span { font-size: 12px; font-weight: 600; color: #fff; }
   .gallery-note { text-align: center; font-size: 12px; color: var(--text-veryfaint); margin-top: 28px; }

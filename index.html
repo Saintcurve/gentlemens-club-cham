@@ -498,6 +498,28 @@
     opacity: 1;
     transform: translateY(0);
   }
+
+  /* Page Transition Overlay */
+  .page-transition-overlay {
+    position: fixed; inset: 0; z-index: 999;
+    background: var(--bg-page);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .page-transition-overlay.active {
+    opacity: 1; pointer-events: auto;
+  }
+
+  /* Section Transition States */
+  section.transitioning-out {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  section.transitioning-in {
+    opacity: 0;
+    transform: translateY(20px);
+  }
   .section-inner { max-width: 1024px; margin: 0 auto; }
   .section-inner.narrow { max-width: 768px; }
   .section-inner.wide { max-width: 1024px; }
@@ -960,6 +982,9 @@
 </div>
 
 <div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- PAGE TRANSITION OVERLAY -->
+<div class="page-transition-overlay" id="pageTransitionOverlay"></div>
 
 <!-- TOAST CONTAINER -->
 <div class="toast-container" id="toastContainer"></div>
@@ -1973,10 +1998,46 @@
   })();
 
   // ---- Smooth scroll ----
+  // Smooth Page Transitions
+  let isTransitioning = false;
+
   function scrollToId(id) {
-    if (id === 'top') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    if (isTransitioning) return;
+
+    if (id === 'top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (!el) return;
+
+    // Nur Page-Transition wenn Section nicht bereits sichtbar
+    const rect = el.getBoundingClientRect();
+    const isAlreadyVisible = rect.top >= 0 && rect.top < window.innerHeight * 0.5;
+
+    if (isAlreadyVisible) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    // Page-Transition starten
+    isTransitioning = true;
+    const overlay = document.getElementById('pageTransitionOverlay');
+
+    // Overlay einblenden
+    overlay.classList.add('active');
+
+    setTimeout(() => {
+      // Zu Section scrollen
+      el.scrollIntoView({ behavior: 'auto' });
+
+      // Overlay ausblenden
+      setTimeout(() => {
+        overlay.classList.remove('active');
+        isTransitioning = false;
+      }, 150);
+    }, 200);
   }
 
   function toggleMobileMenu() {

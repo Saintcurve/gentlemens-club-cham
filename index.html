@@ -104,6 +104,24 @@
   @media (pointer: coarse) {
     .custom-cursor { display: none; }
   }
+
+  /* Cursor-Follow Light */
+  .cursor-light {
+    position: fixed; pointer-events: none; z-index: 9998;
+    width: 300px; height: 300px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(184, 150, 79, 0.12) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease;
+    will-change: left, top;
+    opacity: 0;
+  }
+  .cursor-light.active { opacity: 1; }
+  [data-theme="dark"] .cursor-light {
+    background: radial-gradient(circle, rgba(184, 150, 79, 0.08) 0%, transparent 70%);
+  }
+  @media (pointer: coarse) {
+    .cursor-light { display: none; }
+  }
   .card {
     position: relative; padding: 32px;
     background: var(--bg-card); border: 1px solid var(--border);
@@ -985,6 +1003,9 @@
 
 <!-- PAGE TRANSITION OVERLAY -->
 <div class="page-transition-overlay" id="pageTransitionOverlay"></div>
+
+<!-- CURSOR-FOLLOW LIGHT -->
+<div class="cursor-light" id="cursorLight"></div>
 
 <!-- TOAST CONTAINER -->
 <div class="toast-container" id="toastContainer"></div>
@@ -2224,9 +2245,32 @@
     cursor.className = 'custom-cursor';
     document.body.appendChild(cursor);
 
+    const light = document.getElementById('cursorLight');
+    let lightActive = false;
+
     document.addEventListener('mousemove', (e) => {
       cursor.style.left = e.clientX + 'px';
       cursor.style.top = e.clientY + 'px';
+
+      // Cursor-Follow Light (mit requestAnimationFrame für Performance)
+      if (light) {
+        if (!lightActive) {
+          lightActive = true;
+          light.classList.add('active');
+        }
+        requestAnimationFrame(() => {
+          light.style.left = e.clientX + 'px';
+          light.style.top = e.clientY + 'px';
+        });
+      }
+    });
+
+    // Light ausblenden wenn Maus verlässt
+    document.addEventListener('mouseleave', () => {
+      if (light) {
+        light.classList.remove('active');
+        lightActive = false;
+      }
     });
 
     const hoverElements = document.querySelectorAll('a, button, .card, .gallery-tile, .hof-card');

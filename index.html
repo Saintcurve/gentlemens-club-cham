@@ -413,8 +413,38 @@
     display: flex; align-items: center; justify-content: center;
     width: 40px; height: 40px; border-radius: 8px;
     color: rgba(255,255,255,0.85); transition: background 0.2s;
+    cursor: pointer;
   }
   .nav-hamburger:hover { background: rgba(255,255,255,0.1); }
+
+  /* Morphing Hamburger Icon */
+  .hamburger-icon {
+    width: 24px; height: 24px;
+    position: relative;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+  }
+  .hamburger-icon span {
+    display: block; width: 100%; height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
+    position: absolute;
+  }
+  .hamburger-icon span:nth-child(1) { transform: translateY(-7px); }
+  .hamburger-icon span:nth-child(2) { transform: translateY(0); }
+  .hamburger-icon span:nth-child(3) { transform: translateY(7px); }
+
+  /* Morphing zu X */
+  .nav-hamburger.active .hamburger-icon span:nth-child(1) {
+    transform: translateY(0) rotate(45deg);
+  }
+  .nav-hamburger.active .hamburger-icon span:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  .nav-hamburger.active .hamburger-icon span:nth-child(3) {
+    transform: translateY(0) rotate(-45deg);
+  }
   .nav-mobile-menu {
     display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.95); z-index: 1000;
@@ -1116,12 +1146,12 @@
           <span id="navCrest"></span>
           <span>Gentlemen's Club Cham</span>
         </div>
-        <button class="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menü">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
+        <button class="nav-hamburger" id="navHamburger" onclick="toggleMobileMenu()" aria-label="Menü">
+          <div class="hamburger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </button>
         <div class="nav-links">
           <button onclick="scrollToId('ueber')">Der Club</button>
@@ -2128,7 +2158,9 @@
 
   function toggleMobileMenu() {
     const menu = document.getElementById('mobileMenu');
+    const hamburger = document.getElementById('navHamburger');
     menu.classList.toggle('open');
+    hamburger.classList.toggle('active');
     document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
   }
 

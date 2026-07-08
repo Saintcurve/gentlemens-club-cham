@@ -216,6 +216,36 @@
 
   .divider { width: 64px; height: 1px; margin: 32px auto; background: var(--border); }
 
+  /* ===== RIPPLE EFFECT ===== */
+  .ripple {
+    position: relative;
+    overflow: hidden;
+  }
+  .ripple-wave {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.35);
+    transform: scale(0);
+    animation: ripple-animation 0.6s ease-out;
+    pointer-events: none;
+  }
+  [data-theme="dark"] .ripple-wave {
+    background: rgba(26, 26, 24, 0.25);
+  }
+  .ripple.btn-primary .ripple-wave,
+  .ripple.btn-secondary .ripple-wave {
+    background: rgba(255, 255, 255, 0.3);
+  }
+  [data-theme="dark"] .ripple.btn-primary .ripple-wave {
+    background: rgba(26, 26, 24, 0.2);
+  }
+  @keyframes ripple-animation {
+    to {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
+
   /* ===== MAGNETIC BUTTONS ===== */
   .magnetic {
     position: relative;
@@ -1137,11 +1167,11 @@
         <div class="hero-eyebrow-italic">Tradition &amp; Gemeinschaft</div>
         <h1>Gentlemen's<br />Club Cham</h1>
         <div class="hero-buttons">
-          <button class="btn-primary magnetic" onclick="scrollToId('events')">
+          <button class="btn-primary magnetic ripple" onclick="scrollToId('events')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
             <span class="magnetic-content">Events ansehen</span>
           </button>
-          <button class="btn-secondary magnetic" onclick="scrollToId('ueber')">
+          <button class="btn-secondary magnetic ripple" onclick="scrollToId('ueber')">
             <span class="magnetic-content">Über den Club</span>
           </button>
         </div>
@@ -1214,7 +1244,7 @@
           </div>
           <div class="event-main"><h3>Rüssböötle</h3><p>Gemeinsam mit Gummibooten die Reuss hinunterfahren und die Sonne geniessen — ein entspannter Tag auf dem Wasser mit feiner Gesellschaft, kühlen Getränken und besten Gesprächen. Abwechslung garantiert, nasse Füsse eingeschlossen.</p></div>
           <div class="event-loc"><svg class="icon-pin" width="13" height="13"></svg>Reuss</div>
-          <button class="cal-btn"
+          <button class="cal-btn ripple"
             data-title="Rüssböötle"
             data-loc="Reuss"
             data-desc="Gemeinsam mit Gummibooten die Reuss hinunterfahren und die Sonne geniessen — ein entspannter Tag auf dem Wasser mit feiner Gesellschaft, kühlen Getränken und besten Gesprächen."
@@ -1946,6 +1976,41 @@
       downloadICS(ev);
     }
   }
+
+  // ---- Ripple Effect ----
+  function initRippleEffect() {
+    const rippleElements = document.querySelectorAll('.ripple');
+
+    rippleElements.forEach(el => {
+      el.addEventListener('click', function(e) {
+        // Entferne bestehende Waves
+        const existingWaves = this.querySelectorAll('.ripple-wave');
+        existingWaves.forEach(wave => wave.remove());
+
+        // Erstelle neue Wave
+        const wave = document.createElement('span');
+        wave.className = 'ripple-wave';
+
+        // Position berechnen
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+
+        wave.style.width = wave.style.height = size + 'px';
+        wave.style.left = x + 'px';
+        wave.style.top = y + 'px';
+
+        this.appendChild(wave);
+
+        // Nach Animation entfernen
+        wave.addEventListener('animationend', () => wave.remove());
+      });
+    });
+  }
+
+  // Ripple Effect initialisieren
+  initRippleEffect();
 
   // ---- Magnetic Buttons ----
   function initMagneticButtons() {
